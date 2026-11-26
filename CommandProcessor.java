@@ -36,6 +36,22 @@ public class CommandProcessor {
                 library.addMember(createMember(parts[1], parts[2], parts[3]));
                 System.out.println("OK");
                 break;
+            case "BORROW":
+                Loan loan = library.borrow(parts[1], parts[2]);
+                if (loan != null) {
+                    System.out.println("OK due on day " + loan.getDueDay());
+                }
+                break;
+            case "RETURN":
+                int fine = library.returnItem(parts[1]);
+                if (fine >= 0) {
+                    System.out.println("OK fine " + fine);
+                }
+                break;
+            case "ADVANCE":
+                library.advanceDay(Integer.parseInt(parts[1]));
+                System.out.println("OK today is day " + library.getCurrentDay());
+                break;
             case "INVENTORY":
                 printInventory();
                 break;
@@ -43,7 +59,7 @@ public class CommandProcessor {
                 break;
         }
     }
-    
+
     private Member createMember(String id, String name, String type) {
         switch (type) {
             case "STUDENT":
@@ -72,6 +88,10 @@ public class CommandProcessor {
         if (!(item instanceof Borrowable)) {
             return "NOT_BORROWABLE";
         }
-        return "AVAILABLE";
+        Loan loan = library.getLoanFor(item.getId());
+        if (loan == null) {
+            return "AVAILABLE";
+        }
+        return "ON_LOAN|" + loan.getBorrower().getId();
     }
 }
