@@ -27,6 +27,7 @@ public class Loan {
         return dueDay;
     }
 
+
     public int getDaysLate(int today) {
         return Math.max(0, today - dueDay);
     }

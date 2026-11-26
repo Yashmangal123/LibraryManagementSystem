@@ -1,10 +1,8 @@
 import java.util.*;
 
 public class Library {
-
     private final Map<String, LibraryItem> items = new TreeMap<>();
     private final Map<String, Member> members = new HashMap<>();
-
     private final Map<String, Loan> activeLoans = new HashMap<>();
     private int currentDay = 0;
 
@@ -24,44 +22,28 @@ public class Library {
         members.put(member.getId(), member);
     }
 
-    public Loan borrow(String memberId, String itemId) {
-        Member member = members.get(memberId);
-        if (member == null) {
-            System.out.println("ERROR member " + memberId + " not found");
-            return null;
-        }
-        LibraryItem item = items.get(itemId);
-        if (item == null) {
-            System.out.println("ERROR item " + itemId + " not found");
-            return null;
-        }
+    public Loan borrow(String memberId, String itemId) throws MemberNotFoundException, ItemNotFoundException, ItemNotAvailableException, BorrowLimitExceededException {
+        Member member = findMember(memberId);
+        LibraryItem item = findItem(itemId);
         if (!(item instanceof Borrowable)) {
-            System.out.println("ERROR " + itemId + " cannot be borrowed");
-            return null;
+            throw new ItemNotAvailableException(itemId + " cannot be borrowed");
         }
         if (activeLoans.containsKey(itemId)) {
-            System.out.println("ERROR " + itemId + " is on loan");
-            return null;
+            throw new ItemNotAvailableException(itemId + " is on loan");
         }
         if (!member.hasCapacity(countLoans(memberId))) {
-            System.out.println("ERROR " + memberId + " has reached the limit of "
-                    + member.getMaxItems());
-            return null;
+            throw new BorrowLimitExceededException(memberId, member.getMaxItems());
         }
         Loan loan = new Loan(member, (Borrowable) item, currentDay);
         activeLoans.put(itemId, loan);
         return loan;
     }
 
-    public int returnItem(String itemId) {
-        if (!items.containsKey(itemId)) {
-            System.out.println("ERROR item " + itemId + " not found");
-            return -1;
-        }
+    public int returnItem(String itemId) throws ItemNotFoundException, ItemNotOnLoanException {
+        findItem(itemId);
         Loan loan = activeLoans.remove(itemId);
         if (loan == null) {
-            System.out.println("ERROR " + itemId + " is not on loan");
-            return -1;
+            throw new ItemNotOnLoanException(itemId);
         }
         return loan.calculateFine(currentDay);
     }
@@ -76,6 +58,22 @@ public class Library {
 
     public Loan getLoanFor(String itemId) {
         return activeLoans.get(itemId);
+    }
+
+    private Member findMember(String memberId) throws MemberNotFoundException {
+        Member member = members.get(memberId);
+        if (member == null) {
+            throw new MemberNotFoundException(memberId);
+        }
+        return member;
+    }
+
+    private LibraryItem findItem(String itemId) throws ItemNotFoundException {
+        LibraryItem item = items.get(itemId);
+        if (item == null) {
+            throw new ItemNotFoundException(itemId);
+        }
+        return item;
     }
 
     private int countLoans(String memberId) {

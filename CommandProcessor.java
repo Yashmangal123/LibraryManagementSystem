@@ -11,12 +11,17 @@ public class CommandProcessor {
         while (input.hasNextLine()) {
             String line = input.nextLine();
             if (!line.trim().isEmpty()) {
-                processCommand(line);
+                try {
+                    processCommand(line);
+                } catch (LibraryException e) {
+                    System.out.println("ERROR " + e.getMessage());
+                }
             }
         }
     }
 
-    public void processCommand(String line) {
+    public void processCommand(String line) throws LibraryException {
+
         String[] parts = line.split("\\|", -1);
 
         switch (parts[0]) {
@@ -38,15 +43,11 @@ public class CommandProcessor {
                 break;
             case "BORROW":
                 Loan loan = library.borrow(parts[1], parts[2]);
-                if (loan != null) {
-                    System.out.println("OK due on day " + loan.getDueDay());
-                }
+                System.out.println("OK due on day " + loan.getDueDay());
                 break;
             case "RETURN":
                 int fine = library.returnItem(parts[1]);
-                if (fine >= 0) {
-                    System.out.println("OK fine " + fine);
-                }
+                System.out.println("OK fine " + fine);
                 break;
             case "ADVANCE":
                 library.advanceDay(Integer.parseInt(parts[1]));
