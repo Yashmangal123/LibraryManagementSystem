@@ -1,0 +1,20 @@
+OK
+OK
+OK
+OK
+OK
+ERROR member X9 not found
+ERROR item Z9 not found
+ERROR item Z9 not found
+ERROR member X9 not found
+ERROR B1 is not on loan
+ERROR R1 is not on loan
+ERROR R1 cannot be borrowed
+OK due on day 14
+ERROR B1 is on loan
+ERROR B1 is on loan
+OK today is day 14
+NONE
+OK fine 0
+NONE
+B1|BOOK|Java Basics

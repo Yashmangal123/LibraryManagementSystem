@@ -1,0 +1,40 @@
+NONE
+NONE
+NONE
+OK
+OK
+OK
+OK
+OK
+OK
+OK
+NONE
+OK due on day 14
+OK due on day 14
+OK due on day 14
+OK due on day 30
+B1|BOOK|Apple Physics
+B3|BOOK|Apple Physics
+B2|BOOK|Banana Physics
+R1|REFERENCE|Physics Handbook
+M1|MAGAZINE|Physics Today
+B1|Apple Physics|14
+B2|Banana Physics|14
+M1|Physics Today|14
+OK today is day 14
+NONE
+OK today is day 15
+B1|S1|1|2
+B2|S1|1|2
+M1|S1|1|1
+OK today is day 35
+B1|S1|21|42
+B2|S1|21|42
+M1|S1|21|21
+B3|F1|5|10
+OK fine 21
+B1|BOOK|ON_LOAN|S1
+B2|BOOK|ON_LOAN|S1
+B3|BOOK|ON_LOAN|F1
+M1|MAGAZINE|AVAILABLE
+R1|REFERENCE|NOT_BORROWABLE
