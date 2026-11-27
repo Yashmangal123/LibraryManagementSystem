@@ -80,7 +80,7 @@ When a reserved item is returned, it goes to the first member in the queue who i
 
 ## Design
 
-![Class diagram](docs/class_diagram.png)
+![Class diagram](BC2025118_UML.pdf)
 
 | Class | Responsibility |
 |---|---|
