@@ -21,7 +21,6 @@ public class CommandProcessor {
     }
 
     public void processCommand(String line) throws LibraryException {
-
         String[] parts = line.split("\\|", -1);
 
         switch (parts[0]) {
@@ -53,6 +52,15 @@ public class CommandProcessor {
                 library.advanceDay(Integer.parseInt(parts[1]));
                 System.out.println("OK today is day " + library.getCurrentDay());
                 break;
+            case "LOANS":
+                printLoans(library.getMemberLoans(parts[1]));
+                break;
+            case "OVERDUE":
+                printOverdue(library.getOverdue());
+                break;
+            case "SEARCH":
+                printSearch(library.search(parts[1]));
+                break;
             case "INVENTORY":
                 printInventory();
                 break;
@@ -71,6 +79,39 @@ public class CommandProcessor {
                 return new Faculty(id, name);
             default:
                 throw new IllegalArgumentException("unknown member type " + type);
+        }
+    }
+
+    private void printLoans(List<Loan> loans) {
+        if (loans.isEmpty()) {
+            System.out.println("NONE");
+            return;
+        }
+        for (Loan loan : loans) {
+            System.out.println(loan.getItem().getId() + "|" + loan.getItem().getTitle()
+                    + "|" + loan.getDueDay());
+        }
+    }
+
+    private void printOverdue(List<Loan> loans) {
+        if (loans.isEmpty()) {
+            System.out.println("NONE");
+            return;
+        }
+        int today = library.getCurrentDay();
+        for (Loan loan : loans) {
+            System.out.println(loan.getItem().getId() + "|" + loan.getBorrower().getId()
+                    + "|" + loan.getDaysLate(today) + "|" + loan.calculateFine(today));
+        }
+    }
+
+    private void printSearch(List<LibraryItem> found) {
+        if (found.isEmpty()) {
+            System.out.println("NONE");
+            return;
+        }
+        for (LibraryItem item : found) {
+            System.out.println(item.getId() + "|" + item.getType() + "|" + item.getTitle());
         }
     }
 

@@ -1,6 +1,7 @@
 import java.util.*;
 
 public class Library {
+
     private final Map<String, LibraryItem> items = new TreeMap<>();
     private final Map<String, Member> members = new HashMap<>();
     private final Map<String, Loan> activeLoans = new HashMap<>();
@@ -22,7 +23,9 @@ public class Library {
         members.put(member.getId(), member);
     }
 
-    public Loan borrow(String memberId, String itemId) throws MemberNotFoundException, ItemNotFoundException, ItemNotAvailableException, BorrowLimitExceededException {
+    public Loan borrow(String memberId, String itemId)
+            throws MemberNotFoundException, ItemNotFoundException,
+            ItemNotAvailableException, BorrowLimitExceededException {
         Member member = findMember(memberId);
         LibraryItem item = findItem(itemId);
         if (!(item instanceof Borrowable)) {
@@ -39,7 +42,9 @@ public class Library {
         return loan;
     }
 
-    public int returnItem(String itemId) throws ItemNotFoundException, ItemNotOnLoanException {
+
+    public int returnItem(String itemId)
+            throws ItemNotFoundException, ItemNotOnLoanException {
         findItem(itemId);
         Loan loan = activeLoans.remove(itemId);
         if (loan == null) {
@@ -84,6 +89,46 @@ public class Library {
             }
         }
         return count;
+    }
+
+    public List<LibraryItem> search(String key) {
+        String wanted = key.toLowerCase(Locale.ROOT);
+        List<LibraryItem> found = new ArrayList<>();
+        for (LibraryItem item : items.values()) {
+            if (item.getTitle().toLowerCase(Locale.ROOT).contains(wanted)) {
+                found.add(item);
+            }
+        }
+        found.sort(Comparator.comparing(LibraryItem::getTitle)
+                .thenComparing(LibraryItem::getId));
+        return found;
+    }
+
+    public List<Loan> getMemberLoans(String memberId) throws MemberNotFoundException {
+        findMember(memberId);
+        List<Loan> result = new ArrayList<>();
+        for (Loan loan : activeLoans.values()) {
+            if (loan.getBorrower().getId().equals(memberId)) {
+                result.add(loan);
+            }
+        }
+        Comparator<Loan> byDueDay = Comparator.comparingInt(Loan::getDueDay);
+        result.sort(byDueDay.thenComparing(loan -> loan.getItem().getId()));
+        return result;
+    }
+
+    public List<Loan> getOverdue() {
+        List<Loan> result = new ArrayList<>();
+        for (Loan loan : activeLoans.values()) {
+            if (loan.isOverdue(currentDay)) {
+                result.add(loan);
+            }
+        }
+        Comparator<Loan> byDaysLate =
+                Comparator.comparingInt(loan -> loan.getDaysLate(currentDay));
+        result.sort(byDaysLate.reversed()
+                .thenComparing(loan -> loan.getItem().getId()));
+        return result;
     }
 
     public List<LibraryItem> getInventory() {

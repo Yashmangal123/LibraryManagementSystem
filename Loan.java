@@ -27,9 +27,13 @@ public class Loan {
         return dueDay;
     }
 
-
+    /** 0 if returned on or before the due day. */
     public int getDaysLate(int today) {
         return Math.max(0, today - dueDay);
+    }
+
+    public boolean isOverdue(int currentDay) {
+        return currentDay > dueDay;
     }
 
     public int calculateFine(int today) {
