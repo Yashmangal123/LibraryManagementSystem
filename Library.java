@@ -5,6 +5,7 @@ public class Library {
     private final Map<String, LibraryItem> items = new TreeMap<>();
     private final Map<String, Member> members = new HashMap<>();
     private final Map<String, Loan> activeLoans = new HashMap<>();
+    private final Map<String, Queue<String>> reservations = new HashMap<>();
     private int currentDay = 0;
 
     public void addBook(Book book) {
@@ -39,18 +40,95 @@ public class Library {
         }
         Loan loan = new Loan(member, (Borrowable) item, currentDay);
         activeLoans.put(itemId, loan);
+        removeReservation(memberId, itemId);
         return loan;
     }
 
 
-    public int returnItem(String itemId)
+    public ReturnResult returnItem(String itemId)
             throws ItemNotFoundException, ItemNotOnLoanException {
         findItem(itemId);
-        Loan loan = activeLoans.remove(itemId);
-        if (loan == null) {
+        Loan returnedLoan = activeLoans.remove(itemId);
+        if (returnedLoan == null) {
             throw new ItemNotOnLoanException(itemId);
         }
-        return loan.calculateFine(currentDay);
+
+        int fine = returnedLoan.calculateFine(currentDay);
+        Loan issuedLoan = issueToNextReservedMember(itemId, (Borrowable) returnedLoan.getItem());
+        return new ReturnResult(fine, issuedLoan);
+    }
+
+    public void reserve(String memberId, String itemId)
+            throws MemberNotFoundException, ItemNotFoundException, ItemNotAvailableException {
+        Member member = findMember(memberId);
+        LibraryItem item = findItem(itemId);
+        if (!(item instanceof Borrowable)) {
+            throw new ItemNotAvailableException(itemId + " cannot be borrowed");
+        }
+
+        Loan currentLoan = activeLoans.get(itemId);
+        if (currentLoan == null) {
+            throw new ItemNotAvailableException(itemId + " is available");
+        }
+        if (currentLoan.getBorrower().getId().equals(memberId)) {
+            throw new ItemNotAvailableException(memberId + " already has " + itemId);
+        }
+
+        Queue<String> queue = reservations.computeIfAbsent(itemId, key -> new ArrayDeque<>());
+        if (queue.contains(memberId)) {
+            throw new ItemNotAvailableException(memberId + " already reserved " + itemId);
+        }
+        queue.add(member.getId());
+    }
+
+    private Loan issueToNextReservedMember(String itemId, Borrowable item) {
+        Queue<String> queue = reservations.get(itemId);
+        if (queue == null || queue.isEmpty()) {
+            return null;
+        }
+
+        for (String memberId : queue) {
+            Member member = members.get(memberId);
+            if (member != null && member.hasCapacity(countLoans(memberId))) {
+                queue.remove(memberId);
+                Loan newLoan = new Loan(member, item, currentDay);
+                activeLoans.put(itemId, newLoan);
+                if (queue.isEmpty()) {
+                    reservations.remove(itemId);
+                }
+                return newLoan;
+            }
+        }
+        return null;
+    }
+
+    private void removeReservation(String memberId, String itemId) {
+        Queue<String> queue = reservations.get(itemId);
+        if (queue == null) {
+            return;
+        }
+        queue.remove(memberId);
+        if (queue.isEmpty()) {
+            reservations.remove(itemId);
+        }
+    }
+
+    public static class ReturnResult {
+        private final int fine;
+        private final Loan issuedLoan;
+
+        public ReturnResult(int fine, Loan issuedLoan) {
+            this.fine = fine;
+            this.issuedLoan = issuedLoan;
+        }
+
+        public int getFine() {
+            return fine;
+        }
+
+        public Loan getIssuedLoan() {
+            return issuedLoan;
+        }
     }
 
     public void advanceDay(int days) {

@@ -45,8 +45,18 @@ public class CommandProcessor {
                 System.out.println("OK due on day " + loan.getDueDay());
                 break;
             case "RETURN":
-                int fine = library.returnItem(parts[1]);
-                System.out.println("OK fine " + fine);
+                Library.ReturnResult result = library.returnItem(parts[1]);
+                if (result.getIssuedLoan() == null) {
+                    System.out.println("OK fine " + result.getFine());
+                } else {
+                    Loan issued = result.getIssuedLoan();
+                    System.out.println("OK fine " + result.getFine() + ", issued to "
+                            + issued.getBorrower().getId() + " due on day " + issued.getDueDay());
+                }
+                break;
+            case "RESERVE":
+                library.reserve(parts[1], parts[2]);
+                System.out.println("OK reserved");
                 break;
             case "ADVANCE":
                 library.advanceDay(Integer.parseInt(parts[1]));
